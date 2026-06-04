@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  meilisearch:
+    image: getmeili/meilisearch:v1.12
+    container_name: scubasearch_meilisearch
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_MASTER_KEY: local_dev_key
+      MEILI_ENV: development
+    volumes:
+      - meilisearch_data:/meili_data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: scubasearch_redis
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy noeviction
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # PostgreSQL runs locally (system Postgres on port 5432)
+  # On a fresh machine with no local Postgres, uncomment this block:
+  # postgres:
+  #   image: postgres:16-alpine
+  #   container_name: scubasearch_postgres
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_DB: scubasearch
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+volumes:
+  meilisearch_data:
+  redis_data:
+  # postgres_data:

@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScubaStream — OTT Search Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0F171E;
+      --surface: #1A2332;
+      --surface-2: #1E2C3D;
+      --prime: #00A8E1;
+      --prime-dark: #0088B8;
+      --prime-glow: rgba(0, 168, 225, 0.16);
+      --teal: #47E6E1;
+      --text: #FFFFFF;
+      --text-muted: rgba(255, 255, 255, 0.55);
+      --text-dim: rgba(255, 255, 255, 0.32);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-light: rgba(255, 255, 255, 0.13);
+      --glass: rgba(255, 255, 255, 0.07);
+      --glass-strong: rgba(255, 255, 255, 0.11);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 168, 225, 0.08), transparent),
+        var(--bg);
+    }
+
+    /* ── Config overlay ─────────────────────────────────────────── */
+    .config-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(10, 15, 22, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .config-overlay.visible {
+      display: flex;
+    }
+
+    .config-card {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      padding: 36px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+    }
+
+    .config-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .config-logo-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--teal), var(--prime));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(0, 168, 225, 0.3);
+    }
+
+    .config-logo-mark svg {
+      width: 18px;
+      height: 18px;
+      color: white;
+    }
+
+    .config-logo-text {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .config-logo-text span { color: var(--prime); }
+
+    .config-card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .config-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .config-field {
+      margin-bottom: 14px;
+    }
+
+    .config-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 7px;
+    }
+
+    .config-field input {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      color: white;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .config-field input::placeholder {
+      color: rgba(255, 255, 255, 0.28);
+    }
+
+    .config-field input:focus {
+      border-color: rgba(0, 168, 225, 0.45);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .config-btn {
+      width: 100%;
+      height: 46px;
+      border-radius: 10px;
+      border: none;
+      background: var(--prime);
+      color: white;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.15s, transform 0.12s;
+    }
+
+    .config-btn:hover {
+      background: var(--prime-dark);
+      transform: translateY(-1px);
+    }
+
+    .config-error {
+      display: none;
+      font-size: 12px;
+      color: #f87171;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    /* ── Topbar ─────────────────────────────────────────────────── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 0 40px;
+      background: linear-gradient(180deg, rgba(15, 23, 30, 0.98) 0%, rgba(15, 23, 30, 0.84) 100%);
+      backdrop-filter: blur(24px) saturate(1.6);
+      -webkit-backdrop-filter: blur(24px) saturate(1.6);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--prime) 100%);
+      box-shadow: 0 0 18px rgba(0, 168, 225, 0.32);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-mark svg { width: 16px; height: 16px; color: white; }
+
+    .logo-text { font-size: 15px; font-weight: 800; color: white; letter-spacing: -0.03em; }
+    .logo-text span { color: var(--prime); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      flex-shrink: 0;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover { color: white; }
+
+    /* ── Frosted glass search bar ───────────────────────────────── */
+    .search-outer {
+      position: relative;
+      flex: 1;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .search-rail {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 44px;
+      padding: 0 14px;
+      background: rgba(255, 255, 255, 0.09);
+      backdrop-filter: blur(28px) saturate(1.8);
+      -webkit-backdrop-filter: blur(28px) saturate(1.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .search-rail:focus-within {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(0, 168, 225, 0.48);
+      box-shadow: 0 0 0 3px rgba(0, 168, 225, 0.1), 0 8px 28px rgba(0, 0, 0, 0.24);
+    }
+
+    .search-rail .icon-search { width: 15px; height: 15px; color: var(--text-muted); flex-shrink: 0; transition: color 0.2s; }
+    .search-rail:focus-within .icon-search { color: var(--prime); }
+
+    .search-rail input[type="search"] {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      color: white;
+      -webkit-appearance: none;
+    }
+
+    .search-rail input[type="search"]::placeholder { color: rgba(255, 255, 255, 0.35); font-weight: 400; }
+    .search-rail input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+    .clear-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 3px;
+      color: var(--text-muted);
+      border-radius: 4px;
+      flex-shrink: 0;
+      transition: color 0.15s;
+    }
+
+    .clear-btn:hover { color: white; }
+    .clear-btn svg { width: 13px; height: 13px; display: block; }
+
+    /* ── Search results dropdown ────────────────────────────────── */
+    .search-dropdown {
+      display: none;
+      position: fixed;
+      top: 68px; /* matches topbar height */
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(700px, calc(100vw - 32px));
+      max-height: calc(100vh - 88px);
+      overflow-y: auto;
+      z-index: 200;
+      background: rgba(13, 19, 28, 0.97);
+      backdrop-filter: blur(32px) saturate(1.6);
+      -webkit-backdrop-filter: blur(32px) saturate(1.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 24px 72px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(0, 168, 225, 0.06);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+    }
+
+    .search-dropdown::-webkit-scrollbar { width: 4px; }
+    .search-dropdown::-webkit-scrollbar-track { background: transparent; }
+    .search-dropdown::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 999px; }
+
+    .dropdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(13, 19, 28, 0.98);
+      z-index: 1;
+    }
+
+    .dropdown-header-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+    }
+
+    .dropdown-header-meta {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .dropdown-header-meta strong { color: var(--prime); }
+
+    .dropdown-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+      gap: 10px;
+      padding: 14px 18px 18px;
+    }
+
+    /* ── Dropdown result card ───────────────────────────────────── */
+    .drop-card {
+      position: relative;
+      display: block;
+      text-decoration: none;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface);
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .drop-card:hover {
+      transform: scale(1.05) translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 168, 225, 0.22);
+      z-index: 2;
+    }
+
+    .drop-card-poster {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      display: block;
+      background: var(--surface-2);
+    }
+
+    .drop-card-ph {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .drop-card-ph svg { width: 26px; height: 26px; color: rgba(255, 255, 255, 0.12); }
+
+    .drop-card-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 28px 8px 9px;
+      background: linear-gradient(transparent, rgba(8, 14, 22, 0.95));
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+
+    .drop-card:hover .drop-card-overlay { opacity: 1; transform: none; }
+
+    .drop-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      margin-bottom: 3px;
+    }
+
+    .drop-card-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .drop-tag {
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 4px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.65);
+      letter-spacing: 0.02em;
+    }
+
+    .drop-tag.prime {
+      background: rgba(0, 168, 225, 0.18);
+      color: var(--prime);
+    }
+
+    .drop-card-play {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      width: 36px; height: 36px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.18s, transform 0.18s;
+    }
+
+    .drop-card-play svg { width: 14px; height: 14px; color: var(--bg); margin-left: 2px; }
+    .drop-card:hover .drop-card-play { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+    /* ── Dropdown empty state ───────────────────────────────────── */
+    .drop-empty {
+      padding: 48px 24px 52px;
+      text-align: center;
+    }
+
+    .drop-empty-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: var(--glass);
+      border: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .drop-empty-icon svg { width: 22px; height: 22px; color: var(--text-dim); }
+    .drop-empty h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .drop-empty p { font-size: 13px; color: var(--text-muted); max-width: 30ch; margin: 0 auto; line-height: 1.55; }
+
+    /* ── Backdrop for dropdown dismiss ──────────────────────────── */
+    .dropdown-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+    }
+
+    /* ── Topbar right ───────────────────────────────────────────── */
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border: 1px solid var(--border-light);
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: var(--glass);
+      white-space: nowrap;
+    }
+
+    .status-dot::before {
+      content: "";
+      width: 6px; height: 6px;
+      border-radius: 999px;
+      background: var(--teal);
+      box-shadow: 0 0 0 4px rgba(71, 230, 225, 0.14);
+      flex-shrink: 0;
+    }
+
+    .config-reset-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .config-reset-btn:hover { color: var(--text-muted); border-color: var(--border-light); }
+    .config-reset-btn svg { width: 12px; height: 12px; }
+
+    /* ── Hero ───────────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      height: 480px;
+      overflow: hidden;
+    }
+
+    .hero-backdrop {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(90deg, rgba(15, 23, 30, 0.96) 0%, rgba(15, 23, 30, 0.52) 55%, rgba(15, 23, 30, 0.18) 100%),
+        linear-gradient(180deg, rgba(15, 23, 30, 0.28) 0%, rgba(15, 23, 30, 0.82) 88%, var(--bg) 100%),
+        url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1600&q=80');
+      background-size: cover;
+      background-position: center 30%;
+      transform: scale(1.03);
+      filter: saturate(0.8);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 56px 52px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--prime);
+      margin-bottom: 14px;
+    }
+
+    .hero-badge::before { content: ""; width: 18px; height: 2px; background: var(--prime); border-radius: 999px; }
+
+    .hero-title {
+      font-size: clamp(30px, 4.5vw, 56px);
+      font-weight: 800;
+      line-height: 1.01;
+      letter-spacing: -0.04em;
+      max-width: 14ch;
+      margin-bottom: 14px;
+    }
+
+    .hero-desc {
+      font-size: 15px;
+      line-height: 1.65;
+      color: rgba(255, 255, 255, 0.68);
+      max-width: 44ch;
+      margin-bottom: 24px;
+    }
+
+    .hero-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 8px;
+      background: var(--prime);
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.12s;
+      font-family: inherit;
+    }
+
+    .btn-primary:hover { background: var(--prime-dark); transform: translateY(-1px); }
+    .btn-primary svg { width: 16px; height: 16px; }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-ghost:hover { background: rgba(255, 255, 255, 0.15); }
+
+    /* ── Page content ───────────────────────────────────────────── */
+    .page-content { max-width: 1280px; margin: 0 auto; padding: 0 40px 80px; }
+
+    /* ── Genre strip ────────────────────────────────────────────── */
+    .genre-strip {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 26px 0 18px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .genre-strip::-webkit-scrollbar { display: none; }
+
+    .genre-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-right: 4px;
+    }
+
+    .genre-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--border-light);
+      background: var(--glass);
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-family: inherit;
+      transition: background 0.14s, border-color 0.14s, color 0.14s, transform 0.12s;
+      user-select: none;
+    }
+
+    .genre-chip:hover { background: var(--glass-strong); border-color: rgba(255,255,255,0.22); color: white; transform: translateY(-1px); }
+    .genre-chip.active { background: var(--prime-glow); border-color: rgba(0,168,225,0.38); color: var(--prime); }
+
+    /* ── Section ────────────────────────────────────────────────── */
+    .section { margin-top: 38px; }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-title { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+
+    .section-see-all {
+      font-size: 13px;
+      color: var(--prime);
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.15s;
+    }
+
+    .section-see-all:hover { opacity: 0.8; }
+
+    /* ── Featured landscape cards ───────────────────────────────── */
+    .featured-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .featured-card {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 16 / 9;
+      background: var(--surface);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+
+    .featured-card:hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(0,0,0,0.5); }
+
+    .featured-card-img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.72); }
+
+    .featured-card-body {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 28px 14px 13px;
+      background: linear-gradient(transparent, rgba(10, 16, 24, 0.9));
+    }
+
+    .featured-card-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; letter-spacing: -0.01em; }
+    .featured-card-meta { font-size: 12px; color: rgba(255,255,255,0.58); }
+
+    /* ── Responsive ─────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .topbar { padding: 0 16px; gap: 14px; }
+      .nav-links { display: none; }
+      .hero-content { padding: 0 24px 36px; }
+      .page-content { padding: 0 16px 60px; }
+      .featured-row { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+      .search-dropdown { width: calc(100vw - 16px); }
+    }
+
+    @media (max-width: 600px) {
+      .hero { height: 340px; }
+      .topbar { height: 60px; }
+      .status-dot { display: none; }
+      .dropdown-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .search-dropdown { top: 60px; border-radius: 0 0 12px 12px; }
+      .featured-row { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── Config overlay (shown when no valid API key found) ─── -->
+  <div class="config-overlay" id="configOverlay">
+    <div class="config-card">
+      <div class="config-logo">
+        <div class="config-logo-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </div>
+        <div class="config-logo-text">Scuba<span>Stream</span></div>
+      </div>
+      <h2>Connect to ScubaSearch</h2>
+      <p>Enter your API key and backend URL to try the demo. Settings are saved in your browser — you won't need to do this again.</p>
+      <div class="config-field">
+        <label>API Key</label>
+        <input id="configKey" type="text" placeholder="sk_live_…" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="config-field">
+        <label>Backend URL</label>
+        <input id="configBase" type="text" value="http://localhost:8000" autocomplete="off" spellcheck="false" />
+      </div>
+      <button class="config-btn" onclick="saveConfig()">Connect &amp; Launch</button>
+      <div class="config-error" id="configError">API key is required.</div>
+    </div>
+  </div>
+
+  <!-- ── Topbar ───────────────────────────────────────────────── -->
+  <header class="topbar">
+    <a class="logo" href="#">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+      </div>
+      <div class="logo-text">Scuba<span>Stream</span></div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="#">Home</a>
+      <a href="#">Movies</a>
+      <a href="#">Series</a>
+      <a href="#">Originals</a>
+    </nav>
+
+    <div class="search-outer" id="searchOuter">
+      <div class="search-rail">
+        <svg class="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input type="search" placeholder="Search movies, shows, actors…" autocomplete="off" />
+        <button class="clear-btn" id="clearBtn" title="Clear" aria-label="Clear search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M18 6 6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Results dropdown — anchored via position:fixed to topbar bottom -->
+      <div class="search-dropdown" id="searchDropdown" role="listbox" aria-label="Search results"></div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="status-dot" id="statusDot">ScubaSearch live</div>
+      <button class="config-reset-btn" onclick="resetConfig()" title="Change API key">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        Config
+      </button>
+    </div>
+  </header>
+
+  <!-- backdrop to dismiss dropdown on outside click -->
+  <div class="dropdown-backdrop" id="dropdownBackdrop"></div>
+
+  <!-- ── Hero ─────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-backdrop"></div>
+    <div class="hero-content">
+      <div class="hero-badge">Now Streaming</div>
+      <h1 class="hero-title">Search what you actually want to watch.</h1>
+      <p class="hero-desc">Powered by ScubaSearch — AI hybrid search for OTT platforms. Type any genre, mood, actor, or title in the search bar above.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="triggerSearch('avengers')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Try Avengers
+        </button>
+        <button class="btn-ghost" onclick="triggerSearch('thriller')">Explore Thrillers</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Main content ──────────────────────────────────────────── -->
+  <main class="page-content">
+    <div class="genre-strip">
+      <span class="genre-label">Browse by</span>
+      <button class="genre-chip" onclick="triggerSearch('action')">⚡ Action</button>
+      <button class="genre-chip" onclick="triggerSearch('horror')">👻 Horror</button>
+      <button class="genre-chip" onclick="triggerSearch('anime')">✨ Anime</button>
+      <button class="genre-chip" onclick="triggerSearch('romance')">💫 Romance</button>
+      <button class="genre-chip" onclick="triggerSearch('thriller')">🔪 Thriller</button>
+      <button class="genre-chip" onclick="triggerSearch('sci-fi')">🚀 Sci-Fi</button>
+      <button class="genre-chip" onclick="triggerSearch('marvel')">🦸 Marvel</button>
+      <button class="genre-chip" onclick="triggerSearch('comedy')">😄 Comedy</button>
+      <button class="genre-chip" onclick="triggerSearch('drama')">🎭 Drama</button>
+      <button class="genre-chip" onclick="triggerSearch('documentary')">📽 Docs</button>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Featured Tonight</div>
+        <a class="section-see-all" href="#" onclick="triggerSearch('featured'); return false;">See all</a>
+      </div>
+      <div class="featured-row">
+        <div class="featured-card" onclick="triggerSearch('action adventure')">
+          <img class="featured-card-img" src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=600&q=75" alt="Action" />
+          <div class="featured-card-body">
+            <div class="featured-card-title">Action &amp; Adventure</div>
+            <div class="featured-card-meta">Search action · survival · epic quests</div>
+          </div>
+        </div>
+        <div class="featured-card" onclick="triggerSearch('horror haunted')">
+          <img class="featured-card-img" src="https://images.unsplash.com/photo-1518834107812-67b0b7c58434?auto=format&fit=crop&w=600&q=75" alt="Horror" />
+          <div class="featured-card-body">
+            <div class="featured-card-title">Horror &amp; Haunted</div>
+            <div class="featured-card-meta">Search horror · possession · cursed</div>
+          </div>
+        </div>
+        <div class="featured-card" onclick="triggerSearch('sci-fi space')">
+          <img class="featured-card-img" src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=600&q=75" alt="Sci-Fi" />
+          <div class="featured-card-body">
+            <div class="featured-card-title">Sci-Fi &amp; Space</div>
+            <div class="featured-card-meta">Search space · future · galaxy</div>
+          </div>
+        </div>
+        <div class="featured-card" onclick="triggerSearch('anime')">
+          <img class="featured-card-img" src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=75" alt="Anime" />
+          <div class="featured-card-body">
+            <div class="featured-card-title">Anime</div>
+            <div class="featured-card-meta">Search anime · manga · Japanese</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Try These Searches</div>
+      </div>
+      <div class="genre-strip" style="padding: 0;">
+        <button class="genre-chip" onclick="triggerSearch('avengers iron man')">Avengers</button>
+        <button class="genre-chip" onclick="triggerSearch('haunted house')">Haunted House</button>
+        <button class="genre-chip" onclick="triggerSearch('road trip comedy')">Road Trip Comedy</button>
+        <button class="genre-chip" onclick="triggerSearch('heist crime')">Heist &amp; Crime</button>
+        <button class="genre-chip" onclick="triggerSearch('zombie apocalypse')">Zombie</button>
+        <button class="genre-chip" onclick="triggerSearch('time travel')">Time Travel</button>
+        <button class="genre-chip" onclick="triggerSearch('based on true story')">True Story</button>
+        <button class="genre-chip" onclick="triggerSearch('superhero')">Superhero</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ── Serve.py injection placeholders ───────────────────────────────────────
+    // serve.py replaces the Bearer string below when running on localhost.
+    // When opening via file://, these stay as placeholders → config overlay appears.
+    var _injectedKey  = 'Bearer sk_live_SERVE_PY_INJECTS_THIS'.replace('Bearer ', '');
+    var _injectedBase = 'SERVE_PY_INJECTS_BASE_THIS'; // replaced to full /api/v1 path
+
+    var PLACEHOLDER_KEY  = 'sk_live_SERVE_PY_INJECTS_THIS';
+    var PLACEHOLDER_BASE = 'SERVE_PY_INJECTS_BASE_THIS';
+
+    var searchInput    = document.querySelector('input[type="search"]');
+    var clearBtn       = document.getElementById('clearBtn');
+    var searchDropdown = document.getElementById('searchDropdown');
+    var dropBackdrop   = document.getElementById('dropdownBackdrop');
+    var configOverlay  = document.getElementById('configOverlay');
+    var configError    = document.getElementById('configError');
+
+    // ── Config: detect & bootstrap ────────────────────────────────────────────
+    function getConfig() {
+      // Prefer serve.py injected values
+      if (_injectedKey !== PLACEHOLDER_KEY) {
+        return { key: _injectedKey, base: _injectedBase };
+      }
+      // Fall back to localStorage
+      var k = localStorage.getItem('scs_test_key') || '';
+      var b = localStorage.getItem('scs_test_base') || 'http://localhost:8000';
+      if (k && k !== PLACEHOLDER_KEY) {
+        return { key: k, base: b };
+      }
+      return null;
+    }
+
+    function saveConfig() {
+      var k = (document.getElementById('configKey').value || '').trim();
+      var b = (document.getElementById('configBase').value || '').trim();
+      if (!k) {
+        configError.style.display = 'block';
+        return;
+      }
+      configError.style.display = 'none';
+      localStorage.setItem('scs_test_key', k);
+      localStorage.setItem('scs_test_base', b || 'http://localhost:8000');
+      configOverlay.classList.remove('visible');
+      loadWidget(k, b || 'http://localhost:8000');
+    }
+
+    function resetConfig() {
+      localStorage.removeItem('scs_test_key');
+      localStorage.removeItem('scs_test_base');
+      configOverlay.classList.add('visible');
+      closeDropdown();
+    }
+
+    // Allow Enter key in config inputs
+    document.getElementById('configKey').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') saveConfig();
+    });
+    document.getElementById('configBase').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') saveConfig();
+    });
+
+    // ── Widget loader ─────────────────────────────────────────────────────────
+    function loadWidget(key, base) {
+      // Normalise base to just the origin, then append /api/v1
+      var origin = base.replace(/\/api\/v1\/?$/, '').replace(/\/$/, '');
+      var apiBase = origin + '/api/v1';
+
+      if (window.ScubaSearch && window.ScubaSearch.destroy) {
+        window.ScubaSearch.destroy();
+      }
+
+      var s = document.createElement('script');
+      s.src = './src/widget.js';
+      s.setAttribute('data-api-key', key);
+      s.setAttribute('data-api-base', apiBase);
+      s.setAttribute('data-headless', 'true');
+      s.setAttribute('data-semantic-ratio', '0.55');
+      document.body.appendChild(s);
+    }
+
+    // Bootstrap
+    var cfg = getConfig();
+    if (cfg) {
+      loadWidget(cfg.key, cfg.base);
+    } else {
+      configOverlay.classList.add('visible');
+    }
+
+    // ── Search UI helpers ─────────────────────────────────────────────────────
+    function safeText(v) {
+      return String(v || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function openDropdown() {
+      searchDropdown.style.display = 'block';
+      dropBackdrop.style.display = 'block';
+    }
+
+    function closeDropdown() {
+      searchDropdown.style.display = 'none';
+      dropBackdrop.style.display = 'none';
+    }
+
+    function syncClearBtn() {
+      clearBtn.style.display = searchInput.value.length > 0 ? 'flex' : 'none';
+    }
+
+    clearBtn.addEventListener('click', function() {
+      searchInput.value = '';
+      syncClearBtn();
+      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+      searchInput.focus();
+      closeDropdown();
+      clearActiveChip();
+    });
+
+    searchInput.addEventListener('input', function() {
+      syncClearBtn();
+      if (!searchInput.value.trim()) {
+        closeDropdown();
+        clearActiveChip();
+      }
+    });
+
+    dropBackdrop.addEventListener('click', function() {
+      closeDropdown();
+    });
+
+    function clearActiveChip() {
+      document.querySelectorAll('.genre-chip').forEach(function(c) { c.classList.remove('active'); });
+    }
+
+    function setActiveChip(query) {
+      clearActiveChip();
+      document.querySelectorAll('.genre-chip').forEach(function(c) {
+        var oc = c.getAttribute('onclick') || '';
+        if (oc.indexOf("'" + query + "'") !== -1) c.classList.add('active');
+      });
+    }
+
+    function triggerSearch(query) {
+      if (!searchInput) return;
+      searchInput.value = query;
+      syncClearBtn();
+      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+      setActiveChip(query);
+      searchInput.focus();
+    }
+
+    // ── Results renderer ──────────────────────────────────────────────────────
+    window.addEventListener('scubasearch:results', function(event) {
+      var detail  = event.detail || {};
+      var results = detail.results || [];
+      var query   = detail.query || '';
+
+      if (!query || (!results.length && query.length < 2)) {
+        closeDropdown();
+        return;
+      }
+
+      var headerHtml =
+        '<div class="dropdown-header">' +
+          '<span class="dropdown-header-label">Results for &ldquo;' + safeText(query) + '&rdquo;</span>' +
+          '<span class="dropdown-header-meta">' +
+            (results.length > 0
+              ? '<strong>' + results.length + '</strong> title' + (results.length === 1 ? '' : 's')
+              : 'No matches') +
+            (detail.cache_hit ? ' &middot; cached' : '') +
+          '</span>' +
+        '</div>';
+
+      if (!results.length) {
+        searchDropdown.innerHTML =
+          headerHtml +
+          '<div class="drop-empty">' +
+            '<div class="drop-empty-icon">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">' +
+                '<circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path>' +
+              '</svg>' +
+            '</div>' +
+            '<h3>Nothing found</h3>' +
+            '<p>Try &ldquo;thriller&rdquo;, &ldquo;romance&rdquo;, or an actor&rsquo;s name.</p>' +
+          '</div>';
+        openDropdown();
+        return;
+      }
+
+      var cards = results.map(function(item) {
+        var poster = item.image_url
+          ? '<img class="drop-card-poster" src="' + safeText(item.image_url) + '" alt="' + safeText(item.title || '') + '" loading="lazy" onerror="this.parentNode.replaceChild((function(){var d=document.createElement(\'div\');d.className=\'drop-card-ph\';d.innerHTML=\'<svg viewBox=\\\"0 0 24 24\\\" fill=\\\"none\\\" stroke=\\\"currentColor\\\" stroke-width=\\\"1.5\\\"><rect x=\\\"3\\\" y=\\\"3\\\" width=\\\"18\\\" height=\\\"18\\\" rx=\\\"2\\\"/></svg>\';return d;}()),this)" />'
+          : '<div class="drop-card-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>';
+
+        var tags = [];
+        if (item.content_type) tags.push('<span class="drop-tag prime">' + safeText(item.content_type) + '</span>');
+        if (item.year) tags.push('<span class="drop-tag">' + safeText(item.year) + '</span>');
+
+        return (
+          '<a class="drop-card" href="' + safeText(item.product_url || '#') + '" data-product-id="' + safeText(item.id || '') + '">' +
+            poster +
+            '<div class="drop-card-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>' +
+            '<div class="drop-card-overlay">' +
+              '<div class="drop-card-title">' + safeText(item.title || '') + '</div>' +
+              '<div class="drop-card-tags">' + tags.join('') + '</div>' +
+            '</div>' +
+          '</a>'
+        );
+      }).join('');
+
+      searchDropdown.innerHTML = headerHtml + '<div class="dropdown-grid">' + cards + '</div>';
+      openDropdown();
+
+      searchDropdown.querySelectorAll('.drop-card').forEach(function(card) {
+        card.addEventListener('mouseenter', function() {
+          if (window.ScubaSearch && window.ScubaSearch.engage) window.ScubaSearch.engage();
+        });
+      });
+    });
+
+    // Click tracking
+    document.addEventListener('click', function(e) {
+      var card = e.target.closest('.drop-card');
+      if (!card) return;
+      var pid = card.getAttribute('data-product-id');
+      if (!pid) return;
+      if (window.ScubaSearch && window.ScubaSearch.click) window.ScubaSearch.click(pid);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,52 @@
+[
+  {
+    "query": "cute family animation with animals",
+    "expected_ids": ["tmdb_1327819", "tmdb_1084242", "tmdb_1297842", "tmdb_1226863"],
+    "notes": "Should prefer family animation/adventure over horror or adult drama."
+  },
+  {
+    "query": "mind bending dream heist movie",
+    "expected_ids": ["tmdb_27205"],
+    "notes": "Natural-language semantic match for Inception."
+  },
+  {
+    "query": "space science teacher saves earth",
+    "expected_ids": ["tmdb_687163"],
+    "notes": "Semantic match for Project Hail Mary."
+  },
+  {
+    "query": "fashion magazine assistant comedy drama",
+    "expected_ids": ["tmdb_350", "tmdb_1314481"],
+    "notes": "Semantic match for Devil Wears Prada titles."
+  },
+  {
+    "query": "haunted paranormal investigators scary case",
+    "expected_ids": ["tmdb_1038392", "tmdb_1470130", "tmdb_1193501"],
+    "notes": "Horror/paranormal discovery."
+  },
+  {
+    "query": "superhero team saves the world",
+    "expected_ids": ["tmdb_24428", "tmdb_299536", "tmdb_299534"],
+    "notes": "Avengers-style superhero team query."
+  },
+  {
+    "query": "wrongfully imprisoned man finds hope",
+    "expected_ids": ["tmdb_278"],
+    "notes": "Semantic match for The Shawshank Redemption."
+  },
+  {
+    "query": "fantasy ring quest with hobbits",
+    "expected_ids": ["tmdb_120", "tmdb_122"],
+    "notes": "Lord of the Rings discovery query."
+  },
+  {
+    "query": "pop star biography music drama",
+    "expected_ids": ["tmdb_936075", "tmdb_73353", "tmdb_78192"],
+    "notes": "Michael Jackson biography/music titles."
+  },
+  {
+    "query": "crime family mafia classic",
+    "expected_ids": ["tmdb_238", "tmdb_240"],
+    "notes": "Godfather-style crime family query."
+  }
+]

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Widget Timing Test</title>
+  <style>
+    body { font-family: sans-serif; background: #f5f5f5; padding: 40px; }
+    #log { margin-top: 20px; font-family: monospace; font-size: 13px; background: #1e1e1e; color: #4ade80; padding: 16px; border-radius: 8px; white-space: pre; }
+    input { width: 400px; padding: 10px 14px; font-size: 15px; border: 1.5px solid #ccc; border-radius: 8px; outline: none; }
+  </style>
+</head>
+<body>
+  <h2 style="margin-bottom:12px">Widget Timing Test</h2>
+  <input type="search" id="manualInput" placeholder="Search..." />
+  <div id="log">waiting for widget to load...</div>
+
+  <script>
+    const API_KEY  = 'sk_live_your_api_key';
+    const API_BASE = 'http://localhost:8000';
+    const log      = document.getElementById('log');
+
+    function ts() { return performance.now().toFixed(1); }
+    function print(msg) { log.textContent += '\n' + msg; }
+
+    // Mark page start
+    const PAGE_START = performance.now();
+    print(`[${ts()}ms] page script executing`);
+
+    // Intercept fetch to measure API timing
+    const origFetch = window.fetch;
+    window.fetch = async function(...args) {
+      const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+      if (url.includes('/api/v1/search') && !url.includes('settle') && !url.includes('click')) {
+        const t0 = performance.now();
+        print(`[${t0.toFixed(1)}ms] → fetch /api/v1/search (widget called)`);
+        const res = await origFetch(...args);
+        const t1 = performance.now();
+        print(`[${t1.toFixed(1)}ms] ← response received (${(t1-t0).toFixed(0)}ms round-trip)`);
+        window._lastSearchMs = t1 - t0;
+        // clone to read body
+        const clone = res.clone();
+        clone.json().then(d => {
+          print(`[${performance.now().toFixed(1)}ms]   server processing_time_ms: ${d.processing_time_ms}ms  cache_hit: ${d.cache_hit}  results: ${d.results?.length}`);
+        }).catch(()=>{});
+        return res;
+      }
+      return origFetch(...args);
+    };
+  </script>
+
+  <script
+    src="./src/widget.js"
+    data-api-key="sk_live_your_api_key"
+    data-api-base="http://localhost:8000"
+    data-placeholder="Search titles..."
+    data-semantic-ratio="0.5"
+    onload="onWidgetLoad()"
+  ></script>
+
+  <script>
+    function onWidgetLoad() {
+      const t = performance.now();
+      print(`[${t.toFixed(1)}ms] widget.js onload fired (${(t - PAGE_START).toFixed(0)}ms after page start)`);
+
+      // Wait a tick for widget init
+      setTimeout(() => {
+        const t2 = performance.now();
+        print(`[${t2.toFixed(1)}ms] widget init complete (~${(t2 - PAGE_START).toFixed(0)}ms from page start)`);
+
+        // Observe when widget results appear in DOM
+        const observer = new MutationObserver(() => {
+          const results = document.querySelectorAll('[data-id], .ss-result, .scuba-result, [class*="result"]');
+          const anyResult = document.body.innerHTML.includes('data-id') ||
+            document.querySelectorAll('a[href]').length > 2;
+          if (anyResult) {
+            const t3 = performance.now();
+            print(`[${t3.toFixed(1)}ms] results appeared in DOM`);
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true, characterData: false });
+
+        // Also expose timing for Playwright to read
+        window.__widgetReady = performance.now();
+        window.__widgetReadyDelta = performance.now() - PAGE_START;
+        print(`\n--- ready for search ---`);
+        print(`widget.js size: ~30KB (unminified) / ~14KB (minified)`);
+        print(`\ntype in the search box above to trigger a timed search`);
+      }, 50);
+    }
+  </script>
+</body>
+</html>

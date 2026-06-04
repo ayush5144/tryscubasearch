@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
+    },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres:postgres@localhost:5432/scubasearch"
+      ]
+    },
+    "meilisearch": {
+      "command": "uvx",
+      "args": ["meilisearch-mcp"],
+      "env": {
+        "MEILI_HTTP_ADDR": "http://localhost:7700",
+        "MEILI_MASTER_KEY": "local_dev_key"
+      }
+    }
+  }
+}

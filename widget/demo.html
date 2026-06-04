@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stride — Premium Sneaker Boutique</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: #fff;
+      color: #0a0a0a;
+    }
+
+    /* ─── Top bar ─────────────────────────────────────────────────────────── */
+    .topbar {
+      background: #0a0a0a;
+      color: #fff;
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      padding: 8px;
+    }
+
+    /* ─── Header ─────────────────────────────────────────────────────────── */
+    header {
+      border-bottom: 1px solid #e8e8e8;
+      padding: 0 48px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 10;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      text-transform: uppercase;
+    }
+
+    .logo span {
+      color: #ff3c00;
+    }
+
+    nav {
+      display: flex;
+      gap: 32px;
+    }
+
+    nav a {
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      color: #555;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    nav a:hover {
+      color: #0a0a0a;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* ScubaSearch widget attaches here */
+    .search-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f4f4f4;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-size: 13px;
+      color: #888;
+      cursor: text;
+      width: 240px;
+    }
+
+    .search-trigger svg {
+      flex-shrink: 0;
+    }
+
+    /* ─── Hero ────────────────────────────────────────────────────────────── */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 520px;
+    }
+
+    .hero-text {
+      background: #f7f7f5;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 72px 64px;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #ff3c00;
+      margin-bottom: 16px;
+    }
+
+    .hero-title {
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      color: #666;
+      line-height: 1.6;
+      max-width: 380px;
+      margin-bottom: 32px;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0a0a0a;
+      color: #fff;
+      text-decoration: none;
+      padding: 14px 28px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      width: fit-content;
+    }
+
+    .hero-image {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.85;
+    }
+
+    .hero-image-label {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      background: #ff3c00;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 2px;
+    }
+
+    /* ─── Section ─────────────────────────────────────────────────────────── */
+    .section {
+      padding: 64px 48px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 36px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+    }
+
+    .section-link {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #ff3c00;
+      text-decoration: none;
+    }
+
+    /* ─── Filter pills ─────────────────────────────────────────────────────── */
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .filter {
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      padding: 6px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 100px;
+      transition: all 0.15s;
+    }
+
+    .filter:hover,
+    .filter.active {
+      background: #0a0a0a;
+      color: #fff;
+      border-color: #0a0a0a;
+    }
+
+    /* ─── Product grid ────────────────────────────────────────────────────── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .card-image {
+      background: #f4f4f4;
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      position: relative;
+      margin-bottom: 14px;
+    }
+
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+
+    .card:hover .card-image img {
+      transform: scale(1.04);
+    }
+
+    .card-tag {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 2px;
+    }
+
+    .tag-sale {
+      background: #ff3c00;
+      color: #fff;
+    }
+
+    .tag-new {
+      background: #0a0a0a;
+      color: #fff;
+    }
+
+    .card-brand {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 4px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #0a0a0a;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .card-price {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0a0a0a;
+    }
+
+    .card-price-old {
+      font-size: 12px;
+      font-weight: 400;
+      color: #bbb;
+      text-decoration: line-through;
+      margin-left: 6px;
+    }
+
+    /* ─── Banner strip ─────────────────────────────────────────────────────── */
+    .banner {
+      background: #0a0a0a;
+      color: #fff;
+      padding: 56px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .banner-text h2 {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .banner-text p {
+      font-size: 14px;
+      color: #888;
+    }
+
+    .banner-cta {
+      background: #ff3c00;
+      color: #fff;
+      border: none;
+      padding: 14px 32px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ─── Footer ──────────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid #e8e8e8;
+      padding: 40px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    footer a {
+      color: #ff3c00;
+      text-decoration: none;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      color: #888;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: #0a0a0a;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="topbar">Free shipping on orders above ₹1,999 &nbsp;·&nbsp; New drops every Friday</div>
+
+  <header>
+    <div class="logo">Stride<span>.</span></div>
+
+    <nav>
+      <a href="#">New In</a>
+      <a href="#">Brands</a>
+      <a href="#">Sale</a>
+      <a href="#">Editorial</a>
+    </nav>
+
+    <div class="header-right">
+      <!-- ScubaSearch attaches to this input -->
+      <input type="search" placeholder="Search sneakers, brands..." autocomplete="off"
+        style="background:#f4f4f4;border:none;border-radius:8px;padding:9px 16px;font-size:13px;color:#555;width:240px;outline:none;" />
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-text">
+      <div class="hero-eyebrow">New Season — SS26</div>
+      <h1 class="hero-title">Move<br>Different.</h1>
+      <p class="hero-sub">229 curated styles from ON Running, Adidas, Nike, New Balance, and more. Free returns, always.
+      </p>
+      <a href="#" class="hero-cta">Shop the drop →</a>
+    </div>
+    <div class="hero-image">
+      <img
+        src="https://marketplace.mainstreet.co.in/cdn/shop/files/Artboard126_563a7ae6-3508-4837-816b-294092843bac.png?crop=center&height=800&v=1761649715&width=800"
+        alt="ON Running Cloudtilt" />
+      <div class="hero-image-label">New Arrival</div>
+    </div>
+  </div>
+
+  <!-- Product grid -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Featured Drops</h2>
+      <a href="#" class="section-link">View all →</a>
+    </div>
+
+    <div class="filters">
+      <div class="filter active">All</div>
+      <div class="filter">ON Running</div>
+      <div class="filter">Adidas</div>
+      <div class="filter">Nike</div>
+      <div class="filter">New Balance</div>
+      <div class="filter">Salomon</div>
+      <div class="filter">Sale</div>
+    </div>
+
+    <div class="grid">
+
+      <a class="card" href="https://marketplace.mainstreet.co.in/products/on-running-cloudtilt-black-eclipse"
+        target="_blank">
+        <div class="card-image">
+          <img
+            src="https://marketplace.mainstreet.co.in/cdn/shop/files/Artboard126_563a7ae6-3508-4837-816b-294092843bac.png?crop=center&height=600&v=1761649715&width=600"
+            alt="ON Running Cloudtilt" />
+          <span class="card-tag tag-new">New</span>
+        </div>
+        <div class="card-brand">ON Running</div>
+        <div class="card-title">Cloudtilt Black Eclipse</div>
+        <div class="card-price">₹18,699 <span class="card-price-old">₹20,499</span></div>
+      </a>
+
+      <a class="card" href="https://marketplace.mainstreet.co.in/products/adidas-samba-og-iridescent-stripe-white"
+        target="_blank">
+        <div class="card-image">
+          <img
+            src="https://marketplace.mainstreet.co.in/cdn/shop/files/Artboard117.png?crop=center&height=600&v=1761644341&width=600"
+            alt="Adidas Samba OG" />
+          <span class="card-tag tag-sale">−40%</span>
+        </div>
+        <div class="card-brand">Adidas</div>
+        <div class="card-title">Samba OG Iridescent Stripe White</div>
+        <div class="card-price">₹6,599 <span class="card-price-old">₹10,999</span></div>
+      </a>
+
+      <a class="card" href="https://marketplace.mainstreet.co.in/products/nike-air-jordan-1-low-white-aluminum-wmns"
+        target="_blank">
+        <div class="card-image">
+          <img
+            src="https://marketplace.mainstreet.co.in/cdn/shop/files/Artboard107_5177a997-e783-46f8-942d-914e6686033a.png?crop=center&height=600&v=1761641642&width=600"
+            alt="Air Jordan 1 Low" />
+          <span class="card-tag tag-sale">−26%</span>
+        </div>
+        <div class="card-brand">Air Jordan</div>
+        <div class="card-title">AJ1 Low White Aluminum WMNS</div>
+        <div class="card-price">₹9,599 <span class="card-price-old">₹12,999</span></div>
+      </a>
+
+      <a class="card" href="https://marketplace.mainstreet.co.in/products/adidas-handball-spezial-focus-olive-ivory"
+        target="_blank">
+        <div class="card-image">
+          <img
+            src="https://marketplace.mainstreet.co.in/cdn/shop/files/Artboard118.png?crop=center&height=600&v=1761644528&width=600"
+            alt="Handball Spezial" />
+          <span class="card-tag tag-sale">−29%</span>
+        </div>
+        <div class="card-brand">Adidas</div>
+        <div class="card-title">Handball Spezial Focus Olive Ivory</div>
+        <div class="card-price">₹7,799 <span class="card-price-old">₹10,999</span></div>
+      </a>
+
+      <a class="card" href="https://marketplace.mainstreet.co.in/products/adidas-gazelle-indoor-crystal-white-blue-grey"
+        target="_blank">
+        <div class="card-image">
+          <img
+            src="https://marketplace.mainstreet.co.in/cdn/shop/files/Artboard110.png?crop=center&height=600&v=1761643049&width=600"
+            alt="Gazelle Indoor" />
+          <span class="card-tag tag-sale">−29%</span>
+        </div>
+        <div class="card-brand">Adidas</div>
+        <div class="card-title">Gazelle Indoor Crystal White Blue Grey</div>
+        <div class="card-price">₹7,799 <span class="card-price-old">₹10,999</span></div>
+      </a>
+
+      <a class="card" href="https://marketplace.mainstreet.co.in/products/adidas-samba-inter-miami-cf-messi-black"
+        target="_blank">
+        <div class="card-image">
+          <img
+            src="https://marketplace.mainstreet.co.in/cdn/shop/files/Artboard111_f154b18d-500f-40cf-a497-a2b4cd1cff7b.png?crop=center&height=600&v=1761642878&width=600"
+            alt="Samba Messi" />
+          <span class="card-tag tag-sale">−38%</span>
+        </div>
+        <div class="card-brand">Adidas</div>
+        <div class="card-title">Samba Inter Miami CF Messi Black</div>
+        <div class="card-price">₹8,099 <span class="card-price-old">₹12,999</span></div>
+      </a>
+
+      <a class="card" href="https://marketplace.mainstreet.co.in/products/adidas-handball-spezial-lucid-pink-white-wmns"
+        target="_blank">
+        <div class="card-image">
+          <img
+            src="https://marketplace.mainstreet.co.in/cdn/shop/files/Artboard112_61f873d4-6891-455f-8e14-439b8457bd3d.png?crop=center&height=600&v=1761643170&width=600"
+            alt="Handball Spezial Pink" />
+          <span class="card-tag tag-sale">−24%</span>
+        </div>
+        <div class="card-brand">Adidas</div>
+        <div class="card-title">Handball Spezial Lucid Pink WMNS</div>
+        <div class="card-price">₹8,399 <span class="card-price-old">₹10,999</span></div>
+      </a>
+
+      <a class="card"
+        href="https://marketplace.mainstreet.co.in/products/nike-air-jordan-1-mule-golf-white-midnight-navy"
+        target="_blank">
+        <div class="card-image">
+          <img
+            src="https://marketplace.mainstreet.co.in/cdn/shop/files/Artboard108.png?crop=center&height=600&v=1761642229&width=600"
+            alt="Air Jordan 1 Golf" />
+        </div>
+        <div class="card-brand">Air Jordan</div>
+        <div class="card-title">AJ1 Mule Golf White Midnight Navy</div>
+        <div class="card-price">₹11,999</div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Banner -->
+  <div class="banner">
+    <div class="banner-text">
+      <h2>Find your next<br>favourite pair.</h2>
+      <p>AI-powered search. Just start typing.</p>
+    </div>
+    <button class="banner-cta">Search now →</button>
+  </div>
+
+  <footer>
+    <div>© 2026 Stride. Search powered by <a href="https://scubasearch.io" target="_blank">ScubaSearch</a>.</div>
+    <div class="footer-links">
+      <a href="#">About</a>
+      <a href="#">Returns</a>
+      <a href="#">Contact</a>
+    </div>
+  </footer>
+
+  <script src="src/widget.js" data-api-key="sk_live_SERVE_PY_INJECTS_THIS" data-api-base="SERVE_PY_INJECTS_THIS"
+    data-placeholder="Search sneakers, brands, styles..." data-max-results="10" data-theme="light">
+    </script>
+
+</body>
+
+</html>
